@@ -7,9 +7,12 @@ the frontend.
 ## 1. Supabase PostgreSQL
 
 1. Create a free Supabase project.
-2. Open **Connect** and copy the **Session pooler** connection string (port
-   `5432`), which is suitable for a persistent Node server.
-3. Keep the connection string private. It becomes Render's `DATABASE_URL`.
+2. Open **Connect** and copy both shared-pooler connection strings:
+   - **Transaction mode** on port `6543` becomes `DATABASE_URL` for normal app
+     queries.
+   - **Session mode** on port `5432` becomes `DIRECT_URL` for Prisma migrations.
+3. Replace `[YOUR-PASSWORD]` in both URLs with the URL-encoded Supabase database
+   password and keep both strings private.
 
 Prisma migrations run automatically whenever the Render service starts. The
 first start creates all Sprintly tables in the empty Supabase database.
@@ -30,7 +33,8 @@ outbound SMTP ports.
 3. Select the branch containing `render.yaml`.
 4. Supply the prompted secret values:
 
-   - `DATABASE_URL`: Supabase Session pooler connection string
+   - `DATABASE_URL`: Supabase Transaction pooler connection string (port `6543`)
+   - `DIRECT_URL`: Supabase Session pooler connection string (port `5432`)
    - `BREVO_API_KEY`: Brevo API key
    - `BREVO_SENDER_EMAIL`: verified Brevo sender address
 

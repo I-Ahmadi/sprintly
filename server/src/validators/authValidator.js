@@ -3,7 +3,7 @@ import { body } from 'express-validator';
 export const register = [
   body('email')
     .isEmail()
-    .normalizeEmail()
+    .normalizeEmail({ gmail_remove_dots: false })
     .withMessage('Valid email is required'),
   body('password')
     .isLength({ min: 6 })
@@ -17,7 +17,7 @@ export const register = [
 export const login = [
   body('email')
     .isEmail()
-    .normalizeEmail()
+    .normalizeEmail({ gmail_remove_dots: false })
     .withMessage('Valid email is required'),
   body('password')
     .isLength({ min: 6 })
@@ -48,7 +48,7 @@ export const verifyEmail = [
 export const forgotPassword = [
   body("email")
     .isEmail()
-    .normalizeEmail()
+    .normalizeEmail({ gmail_remove_dots: false })
     .withMessage("Valid email is required"),
 ];
 

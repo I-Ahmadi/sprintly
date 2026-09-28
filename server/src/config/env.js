@@ -2,12 +2,23 @@ import path from 'path';
 
 export const PORT = process.env.PORT || 3000;
 export const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
-export const CLIENT_URL = 'http://localhost:5173';
+const renderUrl = process.env.RENDER_EXTERNAL_HOSTNAME
+  ? `https://${process.env.RENDER_EXTERNAL_HOSTNAME}`
+  : null;
+export const CLIENT_URL = process.env.CLIENT_URL || renderUrl || 'http://localhost:5173';
+
+const configuredOrigins = (process.env.ALLOWED_ORIGINS || CLIENT_URL)
+  .split(',')
+  .map((origin) => origin.trim().replace(/\/$/, ''))
+  .filter(Boolean);
 
 export function isOriginAllowed(origin) {
   if (!origin) return true;
 
-  return /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/.test(origin);
+  const normalizedOrigin = origin.replace(/\/$/, '');
+  const isLocalOrigin = /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/.test(normalizedOrigin);
+
+  return isLocalOrigin || configuredOrigins.includes(normalizedOrigin);
 }
 
 export function validateEnv() {

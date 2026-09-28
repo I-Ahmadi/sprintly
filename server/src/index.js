@@ -1,5 +1,7 @@
 import 'dotenv/config';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import express from 'express';
 import cors from 'cors';
 import { connectDB } from './config/database.js';
@@ -22,6 +24,9 @@ import activityRoutes from './routes/activityRoutes.js';
 import homeRoutes from './routes/homeRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+const clientDistDir = path.resolve(currentDir, '../../client/dist');
+
 validateEnv();
 
 if (!fs.existsSync(UPLOAD_DIR)) {
@@ -31,6 +36,9 @@ if (!fs.existsSync(UPLOAD_DIR)) {
 
 // Initialize Express Application
 const app = express();
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
 app.disable('x-powered-by');
 
 app.use((req, res, next) => {
@@ -58,6 +66,10 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ success: true, status: 'ok' });
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -75,6 +87,17 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/search', searchRoutes);
 
 app.use('/uploads', express.static(UPLOAD_DIR));
+
+if (fs.existsSync(clientDistDir)) {
+  app.use(express.static(clientDistDir));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) {
+      next();
+      return;
+    }
+    res.sendFile(path.join(clientDistDir, 'index.html'));
+  });
+}
 
 app.use(notFoundHandler);
 app.use(errorHandler);

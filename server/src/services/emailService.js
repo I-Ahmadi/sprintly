@@ -2,6 +2,18 @@ import { CLIENT_URL } from '../config/env.js';
 
 const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
+function cleanEnvValue(value) {
+  const trimmed = value?.trim();
+  if (!trimmed) return trimmed;
+
+  const quote = trimmed[0];
+  if ((quote === '"' || quote === "'") && trimmed.at(-1) === quote) {
+    return trimmed.slice(1, -1).trim();
+  }
+
+  return trimmed;
+}
+
 function logEmail(message) {
   const recipients = (Array.isArray(message.to) ? message.to : [message.to])
     .map((recipient) => typeof recipient === 'string' ? recipient : recipient?.email)
@@ -21,9 +33,9 @@ function logEmail(message) {
 }
 
 export async function sendEmail(options) {
-  const apiKey = process.env.BREVO_API_KEY;
-  const senderEmail = process.env.BREVO_SENDER_EMAIL;
-  const senderName = process.env.BREVO_SENDER_NAME || 'Sprintly';
+  const apiKey = cleanEnvValue(process.env.BREVO_API_KEY);
+  const senderEmail = cleanEnvValue(process.env.BREVO_SENDER_EMAIL);
+  const senderName = cleanEnvValue(process.env.BREVO_SENDER_NAME) || 'Sprintly';
 
   if (!apiKey || !senderEmail) {
     if (process.env.NODE_ENV === 'production') {
@@ -36,6 +48,10 @@ export async function sendEmail(options) {
     .map((recipient) => typeof recipient === 'string' ? { email: recipient } : recipient)
     .filter((recipient) => recipient?.email);
 
+  const content = options.html
+    ? { htmlContent: options.html }
+    : { textContent: options.text };
+
   const response = await fetch(BREVO_API_URL, {
     method: 'POST',
     headers: {
@@ -47,8 +63,7 @@ export async function sendEmail(options) {
       sender: { name: senderName, email: senderEmail },
       to: recipients,
       subject: options.subject,
-      htmlContent: options.html || options.text,
-      textContent: options.text,
+      ...content,
     }),
   });
 

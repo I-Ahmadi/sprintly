@@ -42,7 +42,8 @@ export async function register(name, email, password) {
   try {
     await sendVerificationEmail(email, rawToken);
   } catch (err) {
-    await prisma.user.delete({ where: { id: newUser.id } })
+    console.error(`[email] Verification delivery failed: ${err.message}`);
+    await prisma.user.delete({ where: { id: newUser.id } });
     throw new AppError('Verification email could not be sent. Please try again later.', 500);
   }
   

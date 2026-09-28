@@ -18,9 +18,9 @@ test('sendEmail sends a transactional email through the Brevo API', async (t) =>
     else process.env.BREVO_SENDER_NAME = originalSenderName;
   });
 
-  process.env.BREVO_API_KEY = 'test-api-key';
-  process.env.BREVO_SENDER_EMAIL = 'sender@example.com';
-  process.env.BREVO_SENDER_NAME = 'Sprintly Test';
+  process.env.BREVO_API_KEY = '  "test-api-key"  ';
+  process.env.BREVO_SENDER_EMAIL = '  "sender@example.com"  ';
+  process.env.BREVO_SENDER_NAME = '  "Sprintly Test"  ';
 
   let request;
   global.fetch = async (url, options) => {
@@ -48,7 +48,6 @@ test('sendEmail sends a transactional email through the Brevo API', async (t) =>
     to: [{ email: 'recipient@example.com' }],
     subject: 'Verify your email',
     htmlContent: '<p>Verify</p>',
-    textContent: 'Verify',
   });
   assert.deepEqual(result, {
     success: true,
